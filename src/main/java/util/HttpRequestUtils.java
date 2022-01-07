@@ -8,6 +8,21 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 public class HttpRequestUtils {
+
+    public static String parseRequestPath(String url) {
+        if (!url.contains("?")) {
+            return url;
+        }
+        return url.substring(0, url.indexOf("?"));
+    }
+
+    public static String parseRequestParam(String url) {
+        if (!url.contains("?")) {
+            return "";
+        }
+        return url.substring(url.indexOf("?")+1);
+    }
+
     /**
      * @param queryString은
      *            URL에서 ? 이후에 전달되는 field1=value1&field2=value2 형식임
