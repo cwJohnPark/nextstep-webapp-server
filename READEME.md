@@ -28,3 +28,9 @@ Accept: */*
 
 userId=javajigi&password=password&name=cwpark
 ```
+
+## 요구사항 4 - 302 status code 적용
+- 회원가입 완료시 `/index.html` 로 이동한다.
+- 브라우저 URL 이 `/user/create` 로 표시 되지 않고, `/index.html` 로 표시 된다.
+- 회원가입 완료시 HTTP 302 status code로 응답한다. 
+

@@ -38,27 +38,27 @@ public class RequestHandler extends Thread {
 			final BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 			String requestPath = readRequestPath(br);
 
-			final byte[] body;
-			String responseContentType = "text/html";
-			if (requestPath.equals("/user/create")) {
-				readUserCreateRequest(br);
-				body = Files.readAllBytes(new File("./webapp/user/form.html").toPath());
-			} else {
-				body = Files.readAllBytes(new File("./webapp" + requestPath).toPath());
+			final DataOutputStream dos = new DataOutputStream(out);
 
-				if (requestPath.endsWith(".css")) {
-					responseContentType = "text/css";
-				} else if (requestPath.endsWith(".js")) {
-					responseContentType = "text/javascript";
-				} else if (requestPath.endsWith(".woff")) {
-					responseContentType = "text/font";
-				} else {
-					responseContentType = "text/plain";
-				}
+			if (requestPath.equals("/user/create")) {
+				final boolean isCreate = readUserCreateRequest(br);
+				response302Header(dos, "/index.html");
+				return;
 			}
 
-			final DataOutputStream dos = new DataOutputStream(out);
+			final byte[] body;
+			String responseContentType = "text/html";
+			body = Files.readAllBytes(new File("./webapp" + requestPath).toPath());
+			if (requestPath.endsWith(".css")) {
+				responseContentType = "text/css";
+			} else if (requestPath.endsWith(".js")) {
+				responseContentType = "text/javascript";
+			} else if (requestPath.endsWith(".woff")) {
+				responseContentType = "text/font";
+			}
+
 			response200Header(dos, body.length, responseContentType);
+
 			responseBody(dos, body);
 
 		} catch (IOException e) {
@@ -75,7 +75,7 @@ public class RequestHandler extends Thread {
 		return line.split("\\s")[1];
 	}
 
-	private void readUserCreateRequest(BufferedReader br) throws IOException {
+	private boolean readUserCreateRequest(BufferedReader br) throws IOException {
 		String line = br.readLine();
 
 		// read header
@@ -90,12 +90,12 @@ public class RequestHandler extends Thread {
 
 		// read body
 		if (contentLength == -1) {
-			return;
+			return false;
 		}
 		String body = IOUtils.readData(br, contentLength);
 		final User user = User.from(HttpRequestUtils.parseQueryString(body));
 		log.info("Request User = {}", user);
-
+		return true;
 	}
 
 	private void responseBody(DataOutputStream dos, byte[] body) throws IOException {
@@ -108,6 +108,14 @@ public class RequestHandler extends Thread {
 		dos.writeBytes("HTTP/1.1 200 OK \r\n");
 		dos.writeBytes(format("Content-Type: %s;charset=utf-8\r\n", contentType));
 		dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+		dos.writeBytes("\r\n");
+	}
+
+
+	private void response302Header(DataOutputStream dos, String redirectPath) throws IOException {
+		dos.writeBytes("HTTP/1.1 302 Found \r\n");
+		dos.writeBytes(format("Content-Type: text/html;charset=utf-8\r\n"));
+		dos.writeBytes(format("Location: %s\r\n", redirectPath));
 		dos.writeBytes("\r\n");
 	}
 }
