@@ -1,7 +1,5 @@
 package webserver;
 
-import static java.lang.String.*;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -12,14 +10,19 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import db.DataBase;
 import model.User;
 import util.HttpRequestUtils;
+import util.HttpResponseUtils;
 import util.IOUtils;
+import webserver.header.HttpRequestHeader;
 
 public class RequestHandler extends Thread {
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -40,9 +43,19 @@ public class RequestHandler extends Thread {
 
 			final DataOutputStream dos = new DataOutputStream(out);
 
+			// Join
 			if (requestPath.equals("/user/create")) {
 				final boolean isCreate = readUserCreateRequest(br);
-				response302Header(dos, "/index.html");
+				HttpResponseUtils.response302Header(dos, "/index.html");
+				return;
+			}
+
+			// Login
+			if (requestPath.equals("/user/login")) {
+				final boolean isLoginSuccess = readUserLoginRequest(br);
+				final String redirectPath = isLoginSuccess ? "/index.html" : "/user/login_failed.html";
+
+				HttpResponseUtils.response302Header(dos, redirectPath, isLoginSuccess);
 				return;
 			}
 
@@ -57,7 +70,7 @@ public class RequestHandler extends Thread {
 				responseContentType = "text/font";
 			}
 
-			response200Header(dos, body.length, responseContentType);
+			HttpResponseUtils.response200Header(dos, body.length, responseContentType);
 
 			responseBody(dos, body);
 
@@ -75,18 +88,33 @@ public class RequestHandler extends Thread {
 		return line.split("\\s")[1];
 	}
 
-	private boolean readUserCreateRequest(BufferedReader br) throws IOException {
-		String line = br.readLine();
+	private boolean readUserLoginRequest(BufferedReader br) throws IOException {
+		final HttpRequestHeader header = readHeader(br);
+		int contentLength = header.getContentLength();
 
-		// read header
-		int contentLength = -1;
-		while (!"".equals(line)) {
-			line = br.readLine();
-			if (line.startsWith("Content-Length")) {
-				contentLength = Integer.parseInt(HttpRequestUtils.parseHeader(line).getValue());
-			}
-			log.info(line);
+		log.info("isLogined?={}", header.isLogined());
+
+		if (contentLength == -1) {
+			return false;
 		}
+
+		final User requestUser = User.from(
+			HttpRequestUtils.parseQueryString(
+				IOUtils.readData(br, contentLength)));
+
+		final User loginUser = DataBase.findUserById(requestUser.getUserId());
+		if (Objects.isNull(loginUser) || !loginUser.matchPassword(requestUser)) {
+			log.info("User Login Failed: {}", requestUser);
+			return false;
+		}
+
+		log.info("Success User Login: {}", requestUser);
+		return true;
+	}
+
+	private boolean readUserCreateRequest(BufferedReader br) throws IOException {
+		// read header
+		int contentLength = readHeader(br).getContentLength();
 
 		// read body
 		if (contentLength == -1) {
@@ -95,7 +123,20 @@ public class RequestHandler extends Thread {
 		String body = IOUtils.readData(br, contentLength);
 		final User user = User.from(HttpRequestUtils.parseQueryString(body));
 		log.info("Request User = {}", user);
+		DataBase.addUser(user);
 		return true;
+	}
+
+	private HttpRequestHeader readHeader(BufferedReader br) throws IOException {
+		final List<String> lines = new ArrayList<>();
+		String line = br.readLine();
+		lines.add(line);
+		while (!"".equals(line)) {
+			line = br.readLine();
+			lines.add(line);
+			log.info(line);
+		}
+		return HttpRequestHeader.parseHeaderLines(lines);
 	}
 
 	private void responseBody(DataOutputStream dos, byte[] body) throws IOException {
@@ -104,18 +145,5 @@ public class RequestHandler extends Thread {
 		dos.flush();
 	}
 
-	private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String contentType) throws IOException {
-		dos.writeBytes("HTTP/1.1 200 OK \r\n");
-		dos.writeBytes(format("Content-Type: %s;charset=utf-8\r\n", contentType));
-		dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
-		dos.writeBytes("\r\n");
-	}
 
-
-	private void response302Header(DataOutputStream dos, String redirectPath) throws IOException {
-		dos.writeBytes("HTTP/1.1 302 Found \r\n");
-		dos.writeBytes(format("Content-Type: text/html;charset=utf-8\r\n"));
-		dos.writeBytes(format("Location: %s\r\n", redirectPath));
-		dos.writeBytes("\r\n");
-	}
 }

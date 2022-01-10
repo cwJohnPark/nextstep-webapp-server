@@ -34,3 +34,10 @@ userId=javajigi&password=password&name=cwpark
 - 브라우저 URL 이 `/user/create` 로 표시 되지 않고, `/index.html` 로 표시 된다.
 - 회원가입 완료시 HTTP 302 status code로 응답한다. 
 
+## 요구사항 5 - 로그인하기
+- "로그인" 메뉴 클릭 시 `/user/login.html`로 이동해 로그인 할 수 있다.
+- 로그인 성공시 `/index.html`로 이동한다.
+- 로그인 실패시 `/user/login_failed.html` 로 이동한다.
+- 로그인이 성공하면 쿠키를 활용해 로그인 상태를 유지할 수 있다.
+- 로그인 성공시 요청 헤더의 Cookie 값이 `logined=true` 로 설정된다.
+- 로그인 실패시 요청 헤더의 Cookie 값이 `logined=false`로 설정된다.
