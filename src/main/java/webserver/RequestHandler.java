@@ -74,7 +74,7 @@ public class RequestHandler extends Thread {
 
 			final byte[] body;
 			String responseContentType = "text/html";
-			body = Files.readAllBytes(new File("./webapp" + requestPath).toPath());
+			body = Files.readAllBytes(new File("./webapp" + replaceDefaultPageIfNull(requestPath)).toPath());
 			if (requestPath.endsWith(".css")) {
 				responseContentType = "text/css";
 			} else if (requestPath.endsWith(".js")) {
@@ -90,6 +90,10 @@ public class RequestHandler extends Thread {
 		} catch (IOException e) {
 			log.error(e.getMessage());
 		}
+	}
+
+	private String replaceDefaultPageIfNull(String requestPath) {
+		return Objects.isNull(requestPath) || "/".equals(requestPath) ? "/index.html" : requestPath;
 	}
 
 	private List<User> getUserList() {
