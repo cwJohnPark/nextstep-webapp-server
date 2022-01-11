@@ -59,6 +59,19 @@ public class RequestHandler extends Thread {
 				return;
 			}
 
+			// User List
+			if (requestPath.equals("/user/list")) {
+				if (!isUserLogined(br)) {
+					log.debug("user is not logined!!, redirect to login page");
+					HttpResponseUtils.response302Header(dos, "/user/login.html");
+					return;
+				}
+				final byte[] body = UserListView.createHTML(getUserList());
+				HttpResponseUtils.response200Header(dos, body.length, "text/html");
+				responseBody(dos, body);
+				return;
+			}
+
 			final byte[] body;
 			String responseContentType = "text/html";
 			body = Files.readAllBytes(new File("./webapp" + requestPath).toPath());
@@ -77,6 +90,14 @@ public class RequestHandler extends Thread {
 		} catch (IOException e) {
 			log.error(e.getMessage());
 		}
+	}
+
+	private List<User> getUserList() {
+		return new ArrayList<>(DataBase.findAll());
+	}
+
+	private boolean isUserLogined(BufferedReader br) throws IOException {
+		return readHeader(br).isLogined();
 	}
 
 	private String readRequestPath(BufferedReader br) throws IOException {

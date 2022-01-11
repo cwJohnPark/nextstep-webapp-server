@@ -41,3 +41,7 @@ userId=javajigi&password=password&name=cwpark
 - 로그인이 성공하면 쿠키를 활용해 로그인 상태를 유지할 수 있다.
 - 로그인 성공시 요청 헤더의 Cookie 값이 `logined=true` 로 설정된다.
 - 로그인 실패시 요청 헤더의 Cookie 값이 `logined=false`로 설정된다.
+
+## 요구사항 6 - 사용자 목록 출력
+- 접근중인 사용자가 "로그인" 상태일 경우(Cookie="logined=true"), `/user/list` 에 접근시 사용자 목록을 출력한다.
+- 만약 로그인하지 않은 상태일 경우, `/login.html` 로 이동한다.
