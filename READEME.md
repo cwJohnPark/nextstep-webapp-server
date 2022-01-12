@@ -45,3 +45,8 @@ userId=javajigi&password=password&name=cwpark
 ## 요구사항 6 - 사용자 목록 출력
 - 접근중인 사용자가 "로그인" 상태일 경우(Cookie="logined=true"), `/user/list` 에 접근시 사용자 목록을 출력한다.
 - 만약 로그인하지 않은 상태일 경우, `/login.html` 로 이동한다.
+
+## 요청 데이터를 처리하는 로직을 별도의 클래스로 분리한다.
+- 클라이언트 요청 데이터를 담는 InputStream 을 받아서 HTTP Method, Header, Url, 본문을 담는 클래스를 정의한다.
+- 헤더는 `Map<String, String>` 자료 구조에 저장한다.
+- GET 과 POST 를 통해 전달받는 파라미터는 `Map<String, String>` 자료 구조에 저장한다. 
