@@ -9,7 +9,7 @@ Accpet: */*
 
 ## 요구사항 2 - GET 방식으로 회원가입하기
 - 요청 URL: http://localhost:8080/user/create?userId=javajigi&password=123&name=changwon
-- http://localhost:8080/user.form.html 로 이동해야 한다.
+- http://localhost:8080/user/form.html 로 이동해야 한다.
 - 요청 URL 에서 유저 정보를 파싱하여 User 클래스에 담는다.
 
 ## 요구사항 3 - POST 방식으로 회원가입하기
@@ -46,7 +46,13 @@ userId=javajigi&password=password&name=cwpark
 - 접근중인 사용자가 "로그인" 상태일 경우(Cookie="logined=true"), `/user/list` 에 접근시 사용자 목록을 출력한다.
 - 만약 로그인하지 않은 상태일 경우, `/login.html` 로 이동한다.
 
-## 요청 데이터를 처리하는 로직을 별도의 클래스로 분리한다.
+## 리팩토링1 - 요청 데이터를 처리하는 로직을 별도의 클래스로 분리한다.
 - 클라이언트 요청 데이터를 담는 InputStream 을 받아서 HTTP Method, Header, Url, 본문을 담는 클래스를 정의한다.
 - 헤더는 `Map<String, String>` 자료 구조에 저장한다.
-- GET 과 POST 를 통해 전달받는 파라미터는 `Map<String, String>` 자료 구조에 저장한다. 
+- GET 과 POST 를 통해 전달받는 파라미터는 `Map<String, String>` 자료 구조에 저장한다.
+
+## 리팩토링2 - 응답 데이터를 처리하는 로직을 별도의 클래스로 분리한다.
+- 응답 데이터를 처리하는 코드의 중복을 제거하기 위해 HttpResponse 클래스를 구현한다.
+- 응답 헤더 정보는 `Map<String, String>` 자료 구조에 저장한다.
+- 응답을 보낼 때 HTML, CSS, JS 파일을 직접 읽어 응답을 보내는 메소드는 forward()로 구현한다.
+- 다른 URL 로 리다이렉트하는 메소드는 sendRedirect() 메소드로 구현한다.

@@ -69,4 +69,8 @@ public class HttpRequest {
 	public String getParameter(String key) {
 		return parameter.get(key);
 	}
+
+	public Map<String, String> getParameters() {
+		return new HashMap<>(parameter);
+	}
 }
