@@ -1,25 +1,32 @@
 package webserver.header;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class Cookie {
-	private final boolean isLogined;
+	private final Map<String, String> cookies = new HashMap<>();
 
-	private Cookie(boolean isLogined) {
-		this.isLogined = isLogined;
+	public Cookie(String cookie) {
+		parseCookie(cookie);
 	}
 
-	public static Cookie parseKeyValue(String line) {
-		if (Objects.isNull(line) || "".equals(line)) {
-			return new Cookie(false);
+	private void parseCookie(String cookie) {
+		if (Objects.isNull(cookie) || "".equals(cookie)) {
+			return;
 		}
-		if (line.startsWith("Cookie") && line.contains("logined=true")) {
-			return new Cookie(true);
-		}
-		return new Cookie(false);
+
+		Arrays.stream(cookie.split(";\\s"))
+			.map(keyValue -> keyValue.split("="))
+			.forEach(keyValue -> cookies.put(keyValue[0], keyValue[1]));
 	}
 
-	public boolean isLogined() {
-		return isLogined;
+	public String get(String key) {
+		return cookies.get(key);
+	}
+
+	public int size() {
+		return cookies.size();
 	}
 }

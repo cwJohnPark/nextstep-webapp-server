@@ -12,11 +12,14 @@ import java.util.Map;
 import java.util.Objects;
 
 import util.HttpRequestUtils;
+import util.IOUtils;
+import webserver.header.Cookie;
 
 public class HttpRequest {
 
 	private String method;
 	private String path;
+	private Cookie cookie;
 	private Map<String, String> header = new HashMap<>();
 	private Map<String, String> parameter = new HashMap<>();
 
@@ -30,16 +33,21 @@ public class HttpRequest {
 
 		addHeader(br);
 		addParameter(requestLine[1], br);
+		setCookie();
 	}
 
-
 	private void addParameter(String pathWithParameters, BufferedReader br) throws IOException {
-		if (Objects.nonNull(header.get("Content-Type"))
-			&& header.get("Content-Type").equals("application/x-www-form-urlencoded")) {
-			parameter.putAll(parseQueryString(br.readLine()));
+		if ("GET".equals(method)) {
+			parameter.putAll(parseQueryString(parseRequestParam(pathWithParameters)));
 			return;
 		}
-		parameter.putAll(parseQueryString(parseRequestParam(pathWithParameters)));
+
+		if (Objects.isNull(header.get("Content-Type")) ||
+			Objects.isNull(header.get("Content-Length"))) {
+			return;
+		}
+		String body = IOUtils.readData(br, Integer.parseInt(header.get("Content-Length")));
+		parameter.putAll(parseQueryString(body));
 	}
 
 	private void addHeader(BufferedReader br) throws IOException {
@@ -48,8 +56,8 @@ public class HttpRequest {
 			if (line == null) {
 				return;
 			}
-			final String[] keyValue = line.split("\\s");
-			header.put(keyValue[0].substring(0, keyValue[0].length()-1), keyValue[1]);
+			final String[] keyValue = line.split(":\\s");
+			header.put(keyValue[0], keyValue[1]);
 			line = br.readLine();
 		}
 	}
@@ -72,5 +80,13 @@ public class HttpRequest {
 
 	public Map<String, String> getParameters() {
 		return new HashMap<>(parameter);
+	}
+
+	private void setCookie() {
+		cookie = new Cookie(header.get("Cookie"));
+	}
+
+	public String getCookie(String key) {
+		return cookie.get(key);
 	}
 }

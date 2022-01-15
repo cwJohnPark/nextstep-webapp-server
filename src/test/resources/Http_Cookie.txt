@@ -1,4 +1,2 @@
-HTTP/1.1 302 Found 
-Content-Type: text/html;charset=utf-8
-Location: /index.html
-Set-Cookie: logined=true
+HTTP/1.1 302 Found
+Set-Cookie: logined=trueLocation: /index.html
