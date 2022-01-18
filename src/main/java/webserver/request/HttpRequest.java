@@ -1,4 +1,4 @@
-package webserver;
+package webserver.request;
 
 import static util.HttpRequestUtils.*;
 
@@ -11,37 +11,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import util.HttpRequestUtils;
 import util.IOUtils;
+import webserver.HttpMethod;
 import webserver.header.Cookie;
 
 public class HttpRequest {
 
-	private String method;
-	private String path;
-	private Cookie cookie;
-	private Map<String, String> header = new HashMap<>();
-	private Map<String, String> parameter = new HashMap<>();
+	private final RequestLine requestLine;
+	private final Map<String, String> header = new HashMap<>();
+	private final Map<String, String> parameter = new HashMap<>();
+	private final Cookie cookie;
 
 	public HttpRequest(InputStream in) throws IOException {
 		final BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 		String requestLines = br.readLine();
-
-		final String[] requestLine = requestLines.split("\\s");
-		method = requestLine[0];
-		path = HttpRequestUtils.parseRequestPath(requestLine[1]);
+		requestLine = new RequestLine(requestLines);
 
 		addHeader(br);
-		addParameter(requestLine[1], br);
-		setCookie();
+		addParameter(br);
+
+		cookie = new Cookie(header.get("Cookie"));
 	}
 
-	private void addParameter(String pathWithParameters, BufferedReader br) throws IOException {
-		if ("GET".equals(method)) {
-			parameter.putAll(parseQueryString(parseRequestParam(pathWithParameters)));
-			return;
-		}
-
+	private void addParameter(BufferedReader br) throws IOException {
 		if (Objects.isNull(header.get("Content-Type")) ||
 			Objects.isNull(header.get("Content-Length"))) {
 			return;
@@ -62,12 +54,12 @@ public class HttpRequest {
 		}
 	}
 
-	public String getMethod() {
-		return method;
+	public HttpMethod getMethod() {
+		return requestLine.getMethod();
 	}
 
 	public String getPath() {
-		return path;
+		return requestLine.getPath();
 	}
 
 	public String getHeader(String key) {
@@ -75,15 +67,17 @@ public class HttpRequest {
 	}
 
 	public String getParameter(String key) {
+		if (!requestLine.getParams().isEmpty()) {
+			return requestLine.getParams().get(key);
+		}
 		return parameter.get(key);
 	}
 
 	public Map<String, String> getParameters() {
+		if (!requestLine.getParams().isEmpty()) {
+			return requestLine.getParams();
+		}
 		return new HashMap<>(parameter);
-	}
-
-	private void setCookie() {
-		cookie = new Cookie(header.get("Cookie"));
 	}
 
 	public String getCookie(String key) {

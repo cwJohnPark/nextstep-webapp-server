@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import db.DataBase;
 import model.User;
+import webserver.request.HttpRequest;
 
 public class RequestHandler extends Thread {
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);

@@ -56,3 +56,7 @@ userId=javajigi&password=password&name=cwpark
 - 응답 헤더 정보는 `Map<String, String>` 자료 구조에 저장한다.
 - 응답을 보낼 때 HTML, CSS, JS 파일을 직접 읽어 응답을 보내는 메소드는 forward()로 구현한다.
 - 다른 URL 로 리다이렉트하는 메소드는 sendRedirect() 메소드로 구현한다.
+
+## 리팩토링3 - Http Request Line 클래스 분리
+- HTTP 요청 시 첫 번째 줄인 Request Line 을 별도의 클래스로 분리한다.
+- Http Method 는 상수 이므로 enum 타입으로 분리한다. 

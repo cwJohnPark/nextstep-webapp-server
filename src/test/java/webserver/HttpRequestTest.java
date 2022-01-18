@@ -8,6 +8,8 @@ import java.io.InputStream;
 
 import org.junit.Test;
 
+import webserver.request.HttpRequest;
+
 public class HttpRequestTest{
 	private final String testDirectory = "./src/test/resources/";
 
@@ -15,7 +17,7 @@ public class HttpRequestTest{
 	public void request_GET() throws Exception {
 		final HttpRequest request = validateRequest(testDirectory + "Http_GET.txt");
 
-		assertEquals("GET", request.getMethod());
+		assertEquals(HttpMethod.GET, request.getMethod());
 		assertEquals("/user/create", request.getPath());
 		assertEquals("keep-alive", request.getHeader("Connection"));
 		assertEquals("jpark", request.getParameter("userId"));
@@ -25,7 +27,7 @@ public class HttpRequestTest{
 	public void request_POST() throws Exception {
 		final HttpRequest request = validateRequest(testDirectory+ "Http_POST.txt");
 
-		assertEquals("POST", request.getMethod());
+		assertEquals(HttpMethod.POST, request.getMethod());
 		assertEquals("/user/create", request.getPath());
 		assertEquals("keep-alive", request.getHeader("Connection"));
 		assertEquals("jpark", request.getParameter("userId"));

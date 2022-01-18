@@ -1,6 +1,7 @@
 package util;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,9 @@ import com.google.common.collect.Maps;
 
 public class HttpRequestUtils {
 
+    /**
+     * HTTP path와 queryString 이 함께 있는 문자열에서 path 만을 분리하여 반환
+     */
     public static String parseRequestPath(String url) {
         if (!url.contains("?")) {
             return url;
@@ -16,11 +20,16 @@ public class HttpRequestUtils {
         return url.substring(0, url.indexOf("?"));
     }
 
-    public static String parseRequestParam(String url) {
+    /**
+     * HTTP path와 queryString 이 함께 있는 문자열에서 queryString 을 분리하여
+     * key,value 형식으로 반
+     */
+    public static Map<String, String> parseRequestParam(String url) {
         if (!url.contains("?")) {
-            return "";
+            return Collections.emptyMap();
         }
-        return url.substring(url.indexOf("?")+1);
+
+        return parseQueryString(url.substring(url.indexOf("?")+1));
     }
 
     /**
